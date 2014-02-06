@@ -2,6 +2,7 @@ package imageUploader
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"net/http"
@@ -16,11 +17,24 @@ type UploadFile struct {
 
 func init() {
 	http.HandleFunc("/", rootPage)
-	http.HandleFunc("/uploadTo", uploadToPage)
+	http.HandleFunc("/listFile", listFile)
+	http.HandleFunc("/upload", uploadFile)
 }
 
 func uploadFileKey(c appengine.Context) *datastore.Key {
 	return datastore.NewKey(c, "UploadFile", "default_uploadfile", 0, nil)
+}
+
+func listFile(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+
+	c.Infof("%v", r.URL)
+	if strings.HasSuffix(r.URL.Path, ".json") {
+		fmt.Fprintf(w, "%v", "this is a json request")
+	} else {
+		fmt.Fprintf(w, "%v", "this is a normal request")
+	}
+
 }
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +61,7 @@ const uploadPage = `
 	<title>Upload</title>
 </head>
 <body>
-    <form action="/uploadTo" method="post">
+    <form action="/upload" method="post">
       <div><input type="submit" value="Upload"></div>
     </form>
 </body>
@@ -57,7 +71,7 @@ const uploadPage = `
 func upload(w http.ResponseWriter, r *http.Request) {
 }
 
-func uploadToPage(w http.ResponseWriter, r *http.Request) {
+func uploadFile(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
 	fmt.Fprintf(w, "Inserted file at time: (%v) ", time.Now())
